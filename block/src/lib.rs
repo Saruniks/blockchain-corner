@@ -1,5 +1,6 @@
 pub mod block;
 pub mod hashable;
+pub mod blockchain;
 
 pub type BlockHash = Vec<u8>;
 
