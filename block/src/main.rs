@@ -1,40 +1,57 @@
+use block::blockchain::BlockValidationErr;
 use block::{block::Block, blockchain::Blockchain};
+use block::{transaction::{Transaction, Output}};
 use chrono::Utc;
 use block::hashable::Hashable;
 
-fn main() {
+fn main() -> Result<(), BlockValidationErr> {
     let difficulty = 0x000fffffffffffffffffffffffffffff;
+    let mut genesis_block = Block::new(
+        0, Utc::now().timestamp(), vec![0; 32], vec![
+            Transaction { 
+                inputs: vec![], outputs: vec![
+                    Output {
+                        to_addr: "Alice".to_string(),
+                        value: 50,
+                    },
+                    Output {
+                        to_addr: "Bob".to_string(),
+                        value: 7,
+                    }
+                ] }
+        ], difficulty
+    );
+
+    genesis_block.mine();
+    println!("Mined genesis block {:?}", &genesis_block);
+
+    let mut last_hash = genesis_block.hash.clone();
+
+    let mut blockchain = Blockchain::new();
+
+    blockchain.update_with_block(genesis_block)?;
+
     let mut block = Block::new(
-        0, 0, Utc::now().timestamp(), vec![0; 32], "Genesis block".to_owned(), difficulty
+        1, Utc::now().timestamp(), last_hash, vec![
+            Transaction { 
+                inputs: vec![
+                    blockchain.blocks[0].transactions[0].outputs[0].clone(),
+                ], outputs: vec![
+                    Output {
+                        to_addr: "Nobody".to_string(),
+                        value: 36,
+                    },
+                    Output {
+                        to_addr: "Bob".to_string(),
+                        value: 12,
+                    }
+                ] }
+        ], difficulty
     );
 
     block.mine();
-    println!("Mined genesis block {:?}", &block);
+    println!("Mined block {:?}", &block);
 
-    let mut last_hash = block.hash.clone();
-
-    let mut blockchain = Blockchain {
-        blocks: vec![block]
-    };
-
-    println!("Verify: {}", &blockchain.verify());
-
-    for i in 1..=10 {
-        let mut block = Block::new(
-            i, 0, Utc::now().timestamp(), last_hash, "Another block".to_owned(), difficulty
-        );
-    
-        block.mine();
-        println!("Mined block {:?}", &block);
-
-        last_hash = block.hash.clone();
-    
-        blockchain.blocks.push(block);
-
-        println!("Verify: {}", &blockchain.verify());
-    }
-
-    blockchain.blocks[3].payload = "Nope".to_string();
-
-    println!("Verify: {}", &blockchain.verify());
+    blockchain.update_with_block(block)?;
+    Ok(())
 }

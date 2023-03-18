@@ -1,9 +1,10 @@
 pub mod block;
 pub mod hashable;
 pub mod blockchain;
+pub mod transaction;
 
-pub type BlockHash = Vec<u8>;
-
+pub type Hash = Vec<u8>;
+pub type Address = String;
 
 pub fn u32_bytes (u: &u32) -> [u8; 4] {
     [
