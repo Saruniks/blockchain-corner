@@ -1,4 +1,4 @@
-use block::*;
+use crypto::*;
 
 fn main() {
     let difficulty = 0x000fffffffffffffffffffffffffffff;
@@ -27,7 +27,7 @@ fn main() {
 
     println!("Mined genesis block {:?}", &genesis_block);
 
-    let mut last_hash = genesis_block.hash.clone();
+    let last_hash = genesis_block.hash.clone();
 
     let mut blockchain = Blockchain::new();
 
